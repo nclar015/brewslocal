@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <!--Page Info-->
+    <link rel="icon" href="brew-marker.png">
+    <title>BrewsLocal - Find More Local Breweries</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Find local craft breweries that are close to your current location or close to some place that you search."/>
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="BrewsLocal - Find More Local Breweries" />
+    <meta property="og:description" content="Find local craft breweries that are close to your current location or close to some place that you search." />
+    <meta property="og:url" content="https://brewslocal.com" />
+    <meta property="og:site_name" content="BrewsLocal" />
+
+    <!--styling-->
+    <link href="/CSS/style.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
+
+    <!--Javascript-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?libraries=places&sensor=false"></script>
+    <script type="text/javascript" src="javascript/map.js"></script>
+    <script type="text/javascript" src="javascript/jquery.js"></script>
+
+</head>
+
+<!-- Initializing Google Maps -->
+<body onload="initialize()">
+
+    <!--Navigation-->
+
+    <div class="menu-icon" id="menu-infowindow">
+        <img src="images/hamburger-icon.png" title="Menu" width="100">
+    </div>
+    <div class="close-icon" >
+        <img src="images/Close.png" title="Multiply" width="100">
+    </div>
+    <div class="filter-icon" id="filter-infowindow">
+        <img src="images/search-icon-white.png" title="Search" width="96">
+    </div>
+        <div class="current-icon" id="current-infowindow">
+        <img src="images/location-white.png" title="Search" width="96">
+    </div>
+    <div class="main-menu">
+        <div class="logo-main-menu">
+            <img src="/images/round logo.png" />
+        </div>
+        <ul class="nav-menu-main">
+            <li>
+                <a href="https://brewslocal.com/brewlanding" class="menu-button">
+                    View Breweries
+                </a>
+            </li>
+            <li class="menu-button push-second">
+                Map Legend  <span class="glyphicon glyphicon-chevron-down" style="height: 100px; width: 100px; color: #fff;"></span>
+                <ul class="second-menu">
+                    <li>
+                        <a href="" class="menu-button">
+                            <img src="/images/brew-marker.png" />Brewery
+                        </a>
+                    </li>
+                    <li>
+                        <a href="" class="menu-button">
+                            <img src="/images/pub-marker.png" />Brewpub
+                        </a>
+                    </li>
+                    <li>
+                        <a href="" class="menu-button">
+                            <img src="/images/cider-marker.png" />Cidery
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="overlay-background">
+
+    </div>
+
+
+    <!--Drop Out Photos-->
+
+
+           <div class="photoBox" id="photoBox">
+           </div>
+        <div class="buttonBox">
+         <button class="photoButton addPhoto"><span><img src="images/Google Images-48.png"/></span>Add Photo</button>
+         <button class="photoButton backToMap"><span><img src="images/Pittsburgh Map-48.png"/></span>Back To The Map</button>
+        </div>
+
+
+    <!--Drop Out Search Box-->
+
+    <div class="search-box">
+        <input type="text" id="location" placeholder='Enter City or Address' class="location" /><div class="search-image"><a><img src="images/Near Me-48.png" title="Near Me" width="96"></a></div>
+    </div>
+
+    <!--Map-->
+    <div id="map"></div>
+
+
+    <!--Brewery Info-->
+    <div class="side">
+    <div id="sideLogo"></div>
+    <a id="sideType"></a>
+    <a id="sideSocial"></a>
+    <a id="pictures"></a>
+    </div>
+
+    <!--Upload Photo-->
+<div id="addImageBackground">
+<form action="https://brewslocal.com/add-image.php" method="post" id="breweryform" class="col-sm-4" enctype="multipart/form-data">
+
+        
+        <div id="preview">
+        </div>
+        
+        <label class="fileLabel">Choose Photo
+        <input type="file" name="fileToUpload" id="fileToUpload" value="filetoUpload" class="form-control"/></label>
+
+
+    <div class="form-group" style="display: none;">
+        <label class="fileclass">ID</label>
+        <input name="id" type="text" id="idOfThisBrewery" class="form-control" readonly/>
+    </div>
+
+    <input name="submit" type="submit" id="add" value="Add An Image" class="btn btn-primary btn-lg btn-block">
+
+
+</form>
+    <button id="nevermind" class="photoButton"><span><img src="images/Double Left-48.png"/></span>Nevermind</button>
+</div>
+
+<script>
+
+$('#breweryform').submit(function(evt) {
+                evt.preventDefault();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                type: 'POST',
+                url: $(this).attr('action'),
+                data:formData,
+                cache:false,
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                   alert("Thanks for adding the photo!");
+},
+                error: function(data) {
+    alert("Thanks for adding the photo!");
+                }
+                });
+            });
+
+window.URL    = window.URL || window.webkitURL;
+var elBrowse  = document.getElementById("fileToUpload"),
+    elPreview = document.getElementById("preview"),
+    useBlob   = false && window.URL; // Set to `true` to use Blob instead of Data-URL
+
+// 2.
+function readImage (file) {
+
+  // Create a new FileReader instance
+  // https://developer.mozilla.org/en/docs/Web/API/FileReader
+  var reader = new FileReader();
+
+  // Once a file is successfully readed:
+  reader.addEventListener("load", function () {
+
+    // At this point `reader.result` contains already the Base64 Data-URL
+    // and we've could immediately show an image using
+    // `elPreview.insertAdjacentHTML("beforeend", "<img src='"+ reader.result +"'>");`
+    // But we want to get that image's width and height px values!
+    // Since the File Object does not hold the size of an image
+    // we need to create a new image and assign it's src, so when
+    // the image is loaded we can calculate it's width and height:
+    var image  = new Image();
+    image.addEventListener("load", function () {
+    orginialimage = image.width;
+    image.width = 200;
+    image.height = (image.width / orginialimage) * image.height;
+
+
+      // Finally append our created image and the HTML info string to our `#preview` 
+      elPreview.appendChild( this );
+      elPreview.insertAdjacentHTML("beforeend", imageInfo +'<br>');
+
+      // If we set the variable `useBlob` to true:
+      // (Data-URLs can end up being really large
+      // `src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAA...........etc`
+      // Blobs are usually faster and the image src will hold a shorter blob name
+      // src="blob:http%3A//example.com/2a303acf-c34c-4d0a-85d4-2136eef7d723"
+      if (useBlob) {
+        // Free some memory for optimal performance
+        window.URL.revokeObjectURL(image.src);
+      }
+    });
+		
+    image.src = useBlob ? window.URL.createObjectURL(file) : reader.result;
+    $('.fileLabel').slideToggle()
+    $('#add').slideToggle();
+
+  });
+
+  // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
+  reader.readAsDataURL(file);  
+}
+
+// 1.
+// Once the user selects all the files to upload
+// that will trigger a `change` event on the `#browse` input
+elBrowse.addEventListener("change", function() {
+
+  // Let's store the FileList Array into a variable:
+  // https://developer.mozilla.org/en-US/docs/Web/API/FileList
+  var files  = this.files;
+  // Let's create an empty `errors` String to collect eventual errors into:
+  var errors = "";
+
+  if (!files) {
+    errors += "File upload not supported by your browser.";
+  }
+
+  // Check for `files` (FileList) support and if contains at least one file:
+  if (files && files[0]) {
+
+    // Iterate over every File object in the FileList array
+    for(var i=0; i<files.length; i++) {
+
+      // Let's refer to the current File as a `file` variable
+      // https://developer.mozilla.org/en-US/docs/Web/API/File
+      var file = files[i];
+
+      // Test the `file.name` for a valid image extension:
+      // (pipe `|` delimit more image extensions)
+      // The regex can also be expressed like: /\.(png|jpe?g|gif)$/i
+      if ( (/\.(png|jpeg|jpg|gif)$/i).test(file.name) ) {
+        // SUCCESS! It's an image!
+        // Send our image `file` to our `readImage` function!
+        readImage( file ); 
+      } else {
+        errors += file.name +" Unsupported Image extension\n";  
+      }
+    }
+  }
+
+  // Notify the user for any errors (i.e: try uploading a .txt file)
+  if (errors) {
+    alert(errors); 
+  }
+
+});
+
+</script>
+
+</body>
+</html>

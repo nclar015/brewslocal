@@ -1,0 +1,8 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{HTTP_HOST} ^(www.)?brewslocal.com$
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://www.brewslocal.com/$1 [R=301,L]
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+ErrorDocument 404 "<H2>Page not found</H2>"
